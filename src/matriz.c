@@ -32,5 +32,38 @@ Matriz matriz_criar(const char *arquivo) {
 }
 
 Matriz *matriz_divide(Matriz matriz, int np, int q) {
+    int i, j, k, l;
+    int tam = tam = matriz.n * matriz.n / np;
 
+    // Separa a matriz em matrizes menores
+    Matriz *matrizes = malloc(sizeof(Matriz)*np);
+    float *sub_matriz;
+
+    for (i = 0; i < q; i++){
+        for (j = 0; j < q; j++){
+
+            sub_matriz = malloc(sizeof(float)*tam);
+
+            printf("ij: %d, %d\n", i, j);
+
+            for (k = 0; k < matriz.n/q; k++){
+                for (l = 0; l < matriz.n/q; l++){
+                    MATRIZ_IJ(sub_matriz, tam, k, l) = MATRIZ_IJ(matriz.dados, matriz.n, i*matriz.n/q + k, j*matriz.n/q + l);
+                }
+            }
+
+            MATRIZ_IJ(matrizes, np, i, j).dados = sub_matriz;
+            MATRIZ_IJ(matrizes, np, i, j).n = tam;
+
+            for (k = 0; k < matriz.n/q; k++){
+                for (l = 0; l < matriz.n/q; l++){
+                    printf("%.1f ", MATRIZ_IJ(MATRIZ_IJ(matrizes, np, i, j).dados, tam, k, l));
+                }
+                printf("\n");
+            }
+            printf("\n");
+        }
+    }
+
+    return matrizes;
 }

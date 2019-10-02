@@ -46,6 +46,8 @@ int main(int argc, char *argv[]) {
 			}
 			printf("\n");
 		}
+		printf("\n");
+		Matriz *sub_matrizes = matriz_divide(matriz, size, raiz);
 	}
 
 	encerrar:

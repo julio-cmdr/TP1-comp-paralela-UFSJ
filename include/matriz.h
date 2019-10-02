@@ -13,7 +13,7 @@
 
 #include <stdint.h>
 
-#define MATRIZ_IJ(matriz, n, i, j) (matriz[i * (n) + j])
+#define MATRIZ_IJ(matriz, n, i, j) (matriz[(i) * (n) + (j)])
 #define matriz_liberar(matriz) free(matriz.dados)
 
 typedef struct Matriz {
