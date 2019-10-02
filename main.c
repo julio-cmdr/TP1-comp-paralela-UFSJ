@@ -25,6 +25,7 @@ int main(int argc, char *argv[]) {
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
 	Matriz matriz;
+	Matriz *sub_matrizes;
 
 	if (rank == MASTER) {
 		matriz = matriz_criar(argv[1]);
@@ -32,7 +33,7 @@ int main(int argc, char *argv[]) {
 
 	// Verificando se a quantidade de processos é valida.
 	float raiz = sqrt(size);
-	if ((raiz - (int) raiz != 0) || (matriz.n % (int) raiz != 0)) {
+	if ((raiz != (int) raiz) || (matriz.n % (int) raiz != 0)) {
 		if (rank == MASTER) {
 			fprintf(stderr, "Número de processos inválido.\n");
 			matriz_liberar(matriz);
@@ -42,15 +43,32 @@ int main(int argc, char *argv[]) {
 
 	if (rank == MASTER) {
 		matriz_print(matriz);
-		Matriz *sub_matrizes = matriz_divide(matriz, size, raiz);
+		sub_matrizes = matriz_divide(matriz, size, raiz);
 
-		Matriz m1 = sub_matrizes[0];
-		Matriz m2 = sub_matrizes[1];
-		printf("PID %d\n", getpid());
-		//getchar();
-		Matriz r = matriz_multiplicar(m1, m2);
+		for(i = 0; i < size; i++){
+			// enviar N aqui também
+			MPI_Send(sub_matrizes[i].dados, sub_matrizes[i].n*sub_matrizes[i].n, MPI_FLOAT, i, 1, MPI_COMM_WORLD);			
+		}
+	}
 
-		matriz_print(r);
+	/* receber o N e alocar B.dados
+	
+	Matriz B;	
+	B.n = 
+	B.dados = malloc()
+	MPI_Recv();
+
+	*/
+
+	MPI_Cart_create(MPI_COMM_WORLD, 2, (int[]){raiz, raiz}, (int[]){1, 1}, 0, &com_grade);
+
+	int passo, r, u;
+	for(passo = 0; passo < raiz; passo++){
+		for(r = 0; r < raiz; r++){
+			u = (r + passo) % (int)raiz;
+			Matriz a = MATRIZ_IJ(sub_matrizes, raiz, r, u);
+
+		}
 	}
 
 	encerrar:
