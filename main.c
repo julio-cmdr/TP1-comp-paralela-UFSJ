@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <math.h>
 #include <mpi.h>
 #include "matriz.h"
@@ -40,14 +41,16 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (rank == MASTER) {
-		for (i=0; i < matriz.n; i++){
-			for(j=0; j < matriz.n; j++){
-				printf("%.1f ", MATRIZ_IJ(matriz.dados, matriz.n, i, j));
-			}
-			printf("\n");
-		}
-		printf("\n");
+		matriz_print(matriz);
 		Matriz *sub_matrizes = matriz_divide(matriz, size, raiz);
+
+		Matriz m1 = sub_matrizes[0];
+		Matriz m2 = sub_matrizes[1];
+		printf("PID %d\n", getpid());
+		//getchar();
+		Matriz r = matriz_multiplicar(m1, m2);
+
+		matriz_print(r);
 	}
 
 	encerrar:

@@ -52,9 +52,45 @@ Matriz *matriz_divide(Matriz matriz, int np, int q) {
 			}
 
 			MATRIZ_IJ(matrizes, q, i, j).dados = sub_matriz;
-			MATRIZ_IJ(matrizes, q, i, j).n = tam;
+			MATRIZ_IJ(matrizes, q, i, j).n = largura_bloco;
 		}
 	}
 
 	return matrizes;
+}
+
+Matriz matriz_multiplicar(Matriz m1, Matriz m2) {
+	int i, j, k;
+	float min;
+	float soma;
+
+	Matriz r;
+	r.n = m1.n;
+	r.dados = malloc(r.n * r.n * sizeof *r.dados);
+
+	for (i = 0; i < m1.n; i++) {
+		for (j = 0; j < m1.n; j++) {
+			k = 0;
+			min = MATRIZ_IJ(m1.dados, m1.n, i, k) + MATRIZ_IJ(m2.dados, m2.n, k, j);
+			for (k = 1; k < m1.n; k++) {
+				soma = MATRIZ_IJ(m1.dados, m1.n, i, k) + MATRIZ_IJ(m2.dados, m2.n, k, j);
+				if (soma < min) {
+					min = soma;
+				}
+			}
+			MATRIZ_IJ(r.dados, m1.n, i, j) = min;
+		}
+	}
+
+	return r;
+}
+
+void matriz_print(Matriz m) {
+	for (int i = 0; i < m.n; i++){
+		for (int j = 0; j < m.n; j++){
+			printf("%.1f ", MATRIZ_IJ(m.dados, m.n, i, j));
+		}
+		printf("\n");
+	}
+	printf("\n");
 }
