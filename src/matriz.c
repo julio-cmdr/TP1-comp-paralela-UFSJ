@@ -3,7 +3,7 @@
 #include "matriz.h"
 
 Matriz matriz_criar(const char *arquivo) {
-    Matriz matriz;
+	Matriz matriz;
 
 	FILE *arq;
 	arq = fopen(arquivo, "r");
@@ -26,44 +26,35 @@ Matriz matriz_criar(const char *arquivo) {
 				}
 			}
 		}
-	    fclose(arq);
+		fclose(arq);
 	}
 	return matriz;
 }
 
 Matriz *matriz_divide(Matriz matriz, int np, int q) {
-    int i, j, k, l;
-    int tam = tam = matriz.n * matriz.n / np;
+	int i, j, k, l;
+	int tam = matriz.n * matriz.n / np;
+	int largura_bloco = matriz.n/q;
 
-    // Separa a matriz em matrizes menores
-    Matriz *matrizes = malloc(sizeof(Matriz)*np);
-    float *sub_matriz;
+	// Separa a matriz em matrizes menores
+	Matriz *matrizes = malloc(np * sizeof(Matriz));
+	float *sub_matriz;
 
-    for (i = 0; i < q; i++){
-        for (j = 0; j < q; j++){
+	for (i = 0; i < q; i++){
+		for (j = 0; j < q; j++){
 
-            sub_matriz = malloc(sizeof(float)*tam);
+			sub_matriz = malloc(tam * sizeof(float));
 
-            printf("ij: %d, %d\n", i, j);
+			for (k = 0; k < largura_bloco; k++){
+				for (l = 0; l < largura_bloco; l++){
+					MATRIZ_IJ(sub_matriz, largura_bloco, k, l) = MATRIZ_IJ(matriz.dados, matriz.n, i*largura_bloco + k, j*matriz.n/q + l);
+				}
+			}
 
-            for (k = 0; k < matriz.n/q; k++){
-                for (l = 0; l < matriz.n/q; l++){
-                    MATRIZ_IJ(sub_matriz, tam, k, l) = MATRIZ_IJ(matriz.dados, matriz.n, i*matriz.n/q + k, j*matriz.n/q + l);
-                }
-            }
+			MATRIZ_IJ(matrizes, q, i, j).dados = sub_matriz;
+			MATRIZ_IJ(matrizes, q, i, j).n = tam;
+		}
+	}
 
-            MATRIZ_IJ(matrizes, np, i, j).dados = sub_matriz;
-            MATRIZ_IJ(matrizes, np, i, j).n = tam;
-
-            for (k = 0; k < matriz.n/q; k++){
-                for (l = 0; l < matriz.n/q; l++){
-                    printf("%.1f ", MATRIZ_IJ(MATRIZ_IJ(matrizes, np, i, j).dados, tam, k, l));
-                }
-                printf("\n");
-            }
-            printf("\n");
-        }
-    }
-
-    return matrizes;
+	return matrizes;
 }

@@ -17,8 +17,8 @@
 #define matriz_liberar(matriz) free(matriz.dados)
 
 typedef struct Matriz {
-    int32_t n;
-    float *dados;
+	int32_t n;
+	float *dados;
 } Matriz;
 
 Matriz matriz_criar(const char *arquivo);
