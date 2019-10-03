@@ -71,26 +71,27 @@ int main(int argc, char *argv[]) {
 	// Criando comunicadores.
 	MPI_Comm com_grade, com_linha;
 	int rank_linha, rank_grade;
+	int linha = rank / q;
 
-	MPI_Comm_split(MPI_COMM_WORLD, rank / q, rank, &com_linha);
+	MPI_Comm_split(MPI_COMM_WORLD, linha, rank, &com_linha);
 	MPI_Cart_create(MPI_COMM_WORLD, 2, (int[]) {q, q}, (int[]) {1, 1}, 0, &com_grade);
 	MPI_Comm_rank(com_linha, &rank_linha);
 
 
 	// Algoritmo de Fox.
 	int passo, r, u, rank_escolhido;
+	r = linha;
 	for (passo = 0; passo < 1; passo++) {            // TODO: mudar para q
-		for (r = 0; r < 1; r++) {
-			u = (r + passo) % q;
-			MPI_Cart_rank(com_grade, (int[]) {r, u}, &rank_escolhido);
-			printf("Meu rank: %d (%d, %d), Rank escolhido: %d\n", rank, r, u, rank_escolhido);
+		u = (r + passo) % q;
 
-			if (rank == rank_escolhido) {
-				memcpy(A.dados, B.dados, B.n * B.n * sizeof *B.dados);
-			}
+		MPI_Cart_rank(com_grade, (int[]) {r, u}, &rank_escolhido);
+		printf("Meu rank: %d (%d, %d), Rank escolhido: %d\n", rank, r, u, rank_escolhido);
 
-			MPI_Bcast(A.dados, A.n * A.n, MPI_FLOAT, rank_escolhido, com_linha);
+		if (rank == rank_escolhido) {
+			memcpy(A.dados, B.dados, B.n * B.n * sizeof *B.dados);
 		}
+
+		MPI_Bcast(A.dados, A.n * A.n, MPI_FLOAT, rank_escolhido % q, com_linha);
 	}
 
 	encerrar:
