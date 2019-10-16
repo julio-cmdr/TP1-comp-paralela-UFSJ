@@ -59,15 +59,22 @@ Matriz *matriz_divide(Matriz matriz, int np, int q) {
 	return matrizes;
 }
 
-Matriz matriz_multiplicar(Matriz m1, Matriz m2) {
+void matriz_acumular(Matriz m1, Matriz m2, Matriz *r) {
 	int i, j, k;
 	float min;
 	float soma;
 
-	Matriz r;
-	r.n = m1.n;
-	r.dados = malloc(r.n * r.n * sizeof *r.dados);
+	for (i = 0; i < m1.n; i++) {
+		for (j = 0; j < m1.n; j++) {
+			soma = 0;
+			for (k = 0; k < m1.n; k++) {
+				soma += MATRIZ_IJ(m1.dados, m1.n, i, k) * MATRIZ_IJ(m2.dados, m2.n, k, j);
+			}
+			MATRIZ_IJ(r->dados, m1.n, i, j) = soma;
+		}
+	}
 
+	/*
 	for (i = 0; i < m1.n; i++) {
 		for (j = 0; j < m1.n; j++) {
 			k = 0;
@@ -78,11 +85,9 @@ Matriz matriz_multiplicar(Matriz m1, Matriz m2) {
 					min = soma;
 				}
 			}
-			MATRIZ_IJ(r.dados, m1.n, i, j) = min;
+			MATRIZ_IJ(r->dados, m1.n, i, j) += min;
 		}
-	}
-
-	return r;
+	}*/
 }
 
 void matriz_print(Matriz m) {

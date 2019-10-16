@@ -25,7 +25,7 @@ Matriz matriz_criar(const char *arquivo);
 
 Matriz *matriz_divide(Matriz matriz, int np, int q);
 
-Matriz matriz_multiplicar(Matriz m1, Matriz m2);
+void matriz_acumular(Matriz m1, Matriz m2, Matriz *r);
 
 void matriz_print(Matriz m);
 
