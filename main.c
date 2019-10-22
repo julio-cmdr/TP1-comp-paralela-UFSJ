@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
 
 	// Dividindo a matriz em sub-matrizes e espalhando-as para os processos.
 	if (rank == MASTER) {
-		//matriz_print(matriz);
+		matriz_print(matriz);
 		sub_matrizes = matriz_divide(matriz, size, q);
 
 		for (i = 0; i < size; i++) {
@@ -84,37 +84,44 @@ int main(int argc, char *argv[]) {
 	B.dados = malloc(B.n * B.n * sizeof(float));
 	C.dados = calloc(C.n * C.n, sizeof(float));
 	MPI_Recv(B.dados, B.n * B.n, MPI_FLOAT, MASTER, TAG_DADOS, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-	memcpy(A.dados, B.dados, B.n * B.n * sizeof *B.dados);
+		
+	for(int g=1; g < matriz.n; g*=2){
 
-	for (i = 0; i < C.n * C.n; i++) {
-		C.dados[i] = INFINITY;
-	}
+		memcpy(A.dados, B.dados, B.n * B.n * sizeof *B.dados);
 
-	// Algoritmo de Fox.
-	int passo, r, u, rank_escolhido;
-	r = linha;
-	for (passo = 0; passo < q; passo++) {            // TODO: mudar para q
-		u = (r + passo) % q;
-
-		MPI_Cart_rank(com_grade, (int[]) {r, u}, &rank_escolhido);
-		// printf("Meu rank: %d (%d, %d), Rank escolhido: %d\n", rank, r, u, rank_escolhido);
-
-		if (rank_linha == rank_escolhido % q) {
-			memcpy(A2.dados, A.dados, A.n * A.n * sizeof *B.dados);
+		for (i = 0; i < C.n * C.n; i++) {
+			C.dados[i] = INFINITY;
 		}
 
-		MPI_Bcast(A2.dados, A2.n * A2.n, MPI_FLOAT, rank_escolhido % q, com_linha);
+		// Algoritmo de Fox.
+		int passo, r, u, rank_escolhido;
+		r = linha;
+		for (passo = 0; passo < q; passo++) {            // TODO: mudar para q
+			u = (r + passo) % q;
 
-		// Multiplicar a matriz recebida.
-		matriz_acumular(A2, B, &C);
+			MPI_Cart_rank(com_grade, (int[]) {r, u}, &rank_escolhido);
+			// printf("Meu rank: %d (%d, %d), Rank escolhido: %d\n", rank, r, u, rank_escolhido);
 
-		// Envia a matriz B para o vizinho de cima.
-		MPI_Send(B.dados, B.n * B.n, MPI_FLOAT, rank_grade_cima, TAG_DADOS, com_grade);
+			if (rank_linha == rank_escolhido % q) {
+				memcpy(A2.dados, A.dados, A.n * A.n * sizeof *B.dados);
+			}
 
-		// Recebe a matriz B para o vizinho de cima.
-		MPI_Recv(B.dados, B.n * B.n, MPI_FLOAT, rank_grade_baixo, TAG_DADOS, com_grade, MPI_STATUS_IGNORE);
+			MPI_Bcast(A2.dados, A2.n * A2.n, MPI_FLOAT, rank_escolhido % q, com_linha);
+
+			// Multiplicar a matriz recebida.
+			matriz_acumular(A2, B, &C);
+
+			// Envia a matriz B para o vizinho de cima.
+			MPI_Send(B.dados, B.n * B.n, MPI_FLOAT, rank_grade_cima, TAG_DADOS, com_grade);
+
+			// Recebe a matriz B para o vizinho de cima.
+			MPI_Recv(B.dados, B.n * B.n, MPI_FLOAT, rank_grade_baixo, TAG_DADOS, com_grade, MPI_STATUS_IGNORE);
+		}
+
+		memcpy(B.dados, C.dados, C.n * C.n * sizeof * C.dados);
+
+		matriz_print(C);
 	}
-
 
 	// Junta as submatrizes C calculadas.
 	if (rank == MASTER) {
@@ -126,14 +133,28 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-		for (i = 0; i < size; i++) {
-			matriz_print(sub_matrizes[i]);
-		}
-	} else {
-		MPI_Send(C.dados, C.n * C.n, MPI_FLOAT, MASTER, TAG_DADOS, MPI_COMM_WORLD);
-	}
+		// Junta as submatrizes recebidas
+		float *sub_matriz;
+		for (i = 0; i < q; i++){
+			for (j = 0; j < q; j++){
+				
+				sub_matriz = MATRIZ_IJ(sub_matrizes, q, i, j).dados;
 
-	MPI_Barrier(MPI_COMM_WORLD);
+				for (int k = 0; k < matriz.n/q; k++){
+					for (int l = 0; l < matriz.n/q; l++){
+						MATRIZ_IJ(matriz.dados, matriz.n, i*matriz.n/q + k, j*matriz.n/q + l) = MATRIZ_IJ(sub_matriz, matriz.n/q, k, l);
+					}
+				}
+			}
+		}
+
+		matriz_print(matriz);
+		
+	}else{
+		MPI_Send(C.dados, C.n * C.n, MPI_FLOAT, MASTER, TAG_DADOS, MPI_COMM_WORLD);
+	}	
+	
+	//MPI_Barrier(MPI_COMM_WORLD);
 
 	encerrar:
 	MPI_Finalize();

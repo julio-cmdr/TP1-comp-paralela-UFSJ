@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "matriz.h"
 
 Matriz matriz_criar(const char *arquivo) {
@@ -23,6 +24,10 @@ Matriz matriz_criar(const char *arquivo) {
 					fscanf(arq,"%f ", &MATRIZ_IJ(matriz.dados, matriz.n, i, j));
 				} else {
 					fscanf(arq,"%f\n", &MATRIZ_IJ(matriz.dados, matriz.n, i, j));
+				}
+				
+				if (MATRIZ_IJ(matriz.dados, matriz.n, i, j) == 0){
+					MATRIZ_IJ(matriz.dados, matriz.n, i, j) = INFINITY;
 				}
 			}
 		}
