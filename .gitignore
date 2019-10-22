@@ -40,4 +40,4 @@ obj
 nbproject
 .vscode
 floyd
-entrada.txt
+entrada*.txt

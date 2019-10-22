@@ -64,30 +64,33 @@ void matriz_acumular(Matriz m1, Matriz m2, Matriz *r) {
 	float min;
 	float soma;
 
+	/**
 	for (i = 0; i < m1.n; i++) {
 		for (j = 0; j < m1.n; j++) {
 			soma = 0;
 			for (k = 0; k < m1.n; k++) {
 				soma += MATRIZ_IJ(m1.dados, m1.n, i, k) * MATRIZ_IJ(m2.dados, m2.n, k, j);
 			}
-			MATRIZ_IJ(r->dados, m1.n, i, j) = soma;
+			MATRIZ_IJ(r->dados, m1.n, i, j) += soma;
 		}
 	}
+	/**/
 
-	/*
+	/**/
 	for (i = 0; i < m1.n; i++) {
 		for (j = 0; j < m1.n; j++) {
-			k = 0;
-			min = MATRIZ_IJ(m1.dados, m1.n, i, k) + MATRIZ_IJ(m2.dados, m2.n, k, j);
-			for (k = 1; k < m1.n; k++) {
+			min = MATRIZ_IJ(r->dados, m1.n, i, j);
+			for (k = 0; k < m1.n; k++) {
 				soma = MATRIZ_IJ(m1.dados, m1.n, i, k) + MATRIZ_IJ(m2.dados, m2.n, k, j);
 				if (soma < min) {
 					min = soma;
 				}
 			}
-			MATRIZ_IJ(r->dados, m1.n, i, j) += min;
+
+			MATRIZ_IJ(r->dados, m1.n, i, j) = min;
 		}
-	}*/
+	}
+	/**/
 }
 
 void matriz_print(Matriz m) {

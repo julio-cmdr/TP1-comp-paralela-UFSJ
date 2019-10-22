@@ -67,10 +67,10 @@ int main(int argc, char *argv[]) {
 	MPI_Comm com_grade, com_linha;
 	int rank_linha, rank_grade_baixo, rank_grade_cima;
 	int linha = rank / q;
-	
+
 	MPI_Comm_split(MPI_COMM_WORLD, linha, rank, &com_linha);
 	MPI_Cart_create(MPI_COMM_WORLD, 2, (int[]) {q, q}, (int[]) {1, 1}, 0, &com_grade);
-	
+
 	MPI_Comm_rank(com_linha, &rank_linha);
 	MPI_Cart_shift(com_grade, 0, 1, &rank_grade_cima, &rank_grade_baixo);
 
@@ -83,13 +83,17 @@ int main(int argc, char *argv[]) {
 	A2.dados = malloc(A2.n * A2.n * sizeof(float));
 	B.dados = malloc(B.n * B.n * sizeof(float));
 	C.dados = calloc(C.n * C.n, sizeof(float));
-	MPI_Recv(B.dados, B.n * B.n, MPI_FLOAT, MASTER, TAG_DADOS, MPI_COMM_WORLD, MPI_STATUS_IGNORE);	
+	MPI_Recv(B.dados, B.n * B.n, MPI_FLOAT, MASTER, TAG_DADOS, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	memcpy(A.dados, B.dados, B.n * B.n * sizeof *B.dados);
+
+	for (i = 0; i < C.n * C.n; i++) {
+		C.dados[i] = INFINITY;
+	}
 
 	// Algoritmo de Fox.
 	int passo, r, u, rank_escolhido;
 	r = linha;
-	for (passo = 0; passo < 1; passo++) {            // TODO: mudar para q
+	for (passo = 0; passo < q; passo++) {            // TODO: mudar para q
 		u = (r + passo) % q;
 
 		MPI_Cart_rank(com_grade, (int[]) {r, u}, &rank_escolhido);
@@ -104,10 +108,6 @@ int main(int argc, char *argv[]) {
 		// Multiplicar a matriz recebida.
 		matriz_acumular(A2, B, &C);
 
-		printf("%d: passo: %d\n", rank, passo);
-		matriz_print(C);
-		getchar();
-
 		// Envia a matriz B para o vizinho de cima.
 		MPI_Send(B.dados, B.n * B.n, MPI_FLOAT, rank_grade_cima, TAG_DADOS, com_grade);
 
@@ -115,10 +115,25 @@ int main(int argc, char *argv[]) {
 		MPI_Recv(B.dados, B.n * B.n, MPI_FLOAT, rank_grade_baixo, TAG_DADOS, com_grade, MPI_STATUS_IGNORE);
 	}
 
-	if (rank == 0) {
-		matriz_print(C);
+
+	// Junta as submatrizes C calculadas.
+	if (rank == MASTER) {
+		memcpy(sub_matrizes[rank].dados, C.dados, C.n * C.n * sizeof C.dados[0]);
+
+		for (i = 0; i < size; i++) {
+			if (i != MASTER) {
+				MPI_Recv(sub_matrizes[i].dados, sub_matrizes[i].n * sub_matrizes[i].n, MPI_FLOAT, i, TAG_DADOS, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			}
+		}
+
+		for (i = 0; i < size; i++) {
+			matriz_print(sub_matrizes[i]);
+		}
+	} else {
+		MPI_Send(C.dados, C.n * C.n, MPI_FLOAT, MASTER, TAG_DADOS, MPI_COMM_WORLD);
 	}
-	//MPI_Gather(C.dados, C.n * C.n, MPI_FLOAT, matriz.dados, matriz.n * matriz.n, MPI_FLOAT, MASTER, MPI_COMM_WORLD);
+
+	MPI_Barrier(MPI_COMM_WORLD);
 
 	encerrar:
 	MPI_Finalize();
