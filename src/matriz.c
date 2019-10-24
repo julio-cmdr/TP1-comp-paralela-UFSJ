@@ -52,7 +52,7 @@ Matriz *matriz_divide(Matriz matriz, int np, int q) {
 
 			for (k = 0; k < largura_bloco; k++){
 				for (l = 0; l < largura_bloco; l++){
-					MATRIZ_IJ(sub_matriz, largura_bloco, k, l) = MATRIZ_IJ(matriz.dados, matriz.n, i*largura_bloco + k, j*matriz.n/q + l);
+					MATRIZ_IJ(sub_matriz, largura_bloco, k, l) = MATRIZ_IJ(matriz.dados, matriz.n, i*largura_bloco + k, j*largura_bloco + l);
 				}
 			}
 

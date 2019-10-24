@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
 	C.dados = calloc(C.n * C.n, sizeof(float));
 	MPI_Recv(B.dados, B.n * B.n, MPI_FLOAT, MASTER, TAG_DADOS, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-	for(int g=1; 2*g < matriz.n || g >= matriz.n; g*=2){
+	for(int g=1; g < matriz.n; g*=2){
 		memcpy(A.dados, B.dados, B.n * B.n * sizeof *B.dados);
 
 		for (i = 0; i < C.n * C.n; i++) {
@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
 		// Algoritmo de Fox.
 		int passo, r, u, rank_escolhido;
 		r = linha;
-		for (passo = 0; passo < q; passo++) {            // TODO: mudar para q
+		for (passo = 0; passo < q; passo++) {
 			u = (r + passo) % q;
 
 			MPI_Cart_rank(com_grade, (int[]) {r, u}, &rank_escolhido);
@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
 		float *sub_matriz;
 		for (i = 0; i < q; i++){
 			for (j = 0; j < q; j++){
-				
+
 				sub_matriz = MATRIZ_IJ(sub_matrizes, q, i, j).dados;
 
 				for (int k = 0; k < matriz.n/q; k++){
@@ -145,10 +145,10 @@ int main(int argc, char *argv[]) {
 		}
 
 		matriz_print(matriz);
-		
+
 	}else{
 		MPI_Send(C.dados, C.n * C.n, MPI_FLOAT, MASTER, TAG_DADOS, MPI_COMM_WORLD);
-	}	
+	}
 
 	encerrar:
 	MPI_Finalize();
