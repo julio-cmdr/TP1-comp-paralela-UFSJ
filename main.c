@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
 
 	// Dividindo a matriz em sub-matrizes e espalhando-as para os processos.
 	if (rank == MASTER) {
-		matriz_print(matriz);
+		//matriz_print(matriz);
 		sub_matrizes = matriz_divide(matriz, size, q);
 
 		for (i = 0; i < size; i++) {
@@ -84,9 +84,8 @@ int main(int argc, char *argv[]) {
 	B.dados = malloc(B.n * B.n * sizeof(float));
 	C.dados = calloc(C.n * C.n, sizeof(float));
 	MPI_Recv(B.dados, B.n * B.n, MPI_FLOAT, MASTER, TAG_DADOS, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-		
-	for(int g=1; g < matriz.n; g*=2){
 
+	for(int g=1; 2*g < matriz.n || g >= matriz.n; g*=2){
 		memcpy(A.dados, B.dados, B.n * B.n * sizeof *B.dados);
 
 		for (i = 0; i < C.n * C.n; i++) {
@@ -100,7 +99,6 @@ int main(int argc, char *argv[]) {
 			u = (r + passo) % q;
 
 			MPI_Cart_rank(com_grade, (int[]) {r, u}, &rank_escolhido);
-			// printf("Meu rank: %d (%d, %d), Rank escolhido: %d\n", rank, r, u, rank_escolhido);
 
 			if (rank_linha == rank_escolhido % q) {
 				memcpy(A2.dados, A.dados, A.n * A.n * sizeof *B.dados);
@@ -119,8 +117,6 @@ int main(int argc, char *argv[]) {
 		}
 
 		memcpy(B.dados, C.dados, C.n * C.n * sizeof * C.dados);
-
-		matriz_print(C);
 	}
 
 	// Junta as submatrizes C calculadas.
@@ -153,8 +149,6 @@ int main(int argc, char *argv[]) {
 	}else{
 		MPI_Send(C.dados, C.n * C.n, MPI_FLOAT, MASTER, TAG_DADOS, MPI_COMM_WORLD);
 	}	
-	
-	//MPI_Barrier(MPI_COMM_WORLD);
 
 	encerrar:
 	MPI_Finalize();

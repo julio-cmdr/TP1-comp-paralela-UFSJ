@@ -26,7 +26,7 @@ Matriz matriz_criar(const char *arquivo) {
 					fscanf(arq,"%f\n", &MATRIZ_IJ(matriz.dados, matriz.n, i, j));
 				}
 				
-				if (MATRIZ_IJ(matriz.dados, matriz.n, i, j) == 0){
+				if (MATRIZ_IJ(matriz.dados, matriz.n, i, j) == 0 && i != j){
 					MATRIZ_IJ(matriz.dados, matriz.n, i, j) = INFINITY;
 				}
 			}
@@ -69,19 +69,6 @@ void matriz_acumular(Matriz m1, Matriz m2, Matriz *r) {
 	float min;
 	float soma;
 
-	/**
-	for (i = 0; i < m1.n; i++) {
-		for (j = 0; j < m1.n; j++) {
-			soma = 0;
-			for (k = 0; k < m1.n; k++) {
-				soma += MATRIZ_IJ(m1.dados, m1.n, i, k) * MATRIZ_IJ(m2.dados, m2.n, k, j);
-			}
-			MATRIZ_IJ(r->dados, m1.n, i, j) += soma;
-		}
-	}
-	/**/
-
-	/**/
 	for (i = 0; i < m1.n; i++) {
 		for (j = 0; j < m1.n; j++) {
 			min = MATRIZ_IJ(r->dados, m1.n, i, j);
@@ -95,7 +82,6 @@ void matriz_acumular(Matriz m1, Matriz m2, Matriz *r) {
 			MATRIZ_IJ(r->dados, m1.n, i, j) = min;
 		}
 	}
-	/**/
 }
 
 void matriz_print(Matriz m) {
