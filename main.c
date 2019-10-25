@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/time.h>
 #include <math.h>
 #include <mpi.h>
 #include "matriz.h"
@@ -26,6 +27,8 @@ int main(int argc, char *argv[]) {
 		printf("Favor passar um arquivo de entrada!\n");
 		goto encerrar;
 	}
+
+	int calcular_tempo = argc > 2 && strcmp(argv[2], "-t") == 0;
 
 	int rank, size;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -52,9 +55,15 @@ int main(int argc, char *argv[]) {
 		goto encerrar;
 	}
 
+	struct timeval tvi, tvf;
+
 	// Dividindo a matriz em sub-matrizes e espalhando-as para os processos.
 	if (rank == MASTER) {
-		//matriz_print(matriz);
+		// Começa a contar o tempo.
+		if (calcular_tempo) {
+			gettimeofday(&tvi, NULL);
+		}
+
 		sub_matrizes = matriz_divide(matriz, size, q);
 
 		for (i = 0; i < size; i++) {
@@ -144,9 +153,18 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
+		// Termina a contagem de tempo
+		if (calcular_tempo) {
+			gettimeofday(&tvf, NULL);
+		}
+
 		matriz_print(matriz);
 
-	}else{
+		if (calcular_tempo) {
+			printf("\n%zu.%ld\n", tvf.tv_sec - tvi.tv_sec, tvf.tv_usec - tvi.tv_usec);
+		}
+
+	} else {
 		MPI_Send(C.dados, C.n * C.n, MPI_FLOAT, MASTER, TAG_DADOS, MPI_COMM_WORLD);
 	}
 
