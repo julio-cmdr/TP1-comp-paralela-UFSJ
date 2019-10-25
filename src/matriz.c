@@ -20,11 +20,7 @@ Matriz matriz_criar(const char *arquivo) {
 		int i, j;
 		for (i = 0; i < matriz.n; i++) {
 			for (j = 0; j < matriz.n; j++) {
-				if (j != (matriz.n -1)) {
-					fscanf(arq,"%f ", &MATRIZ_IJ(matriz.dados, matriz.n, i, j));
-				} else {
-					fscanf(arq,"%f\n", &MATRIZ_IJ(matriz.dados, matriz.n, i, j));
-				}
+				fscanf(arq,"%f", &MATRIZ_IJ(matriz.dados, matriz.n, i, j));
 				
 				if (MATRIZ_IJ(matriz.dados, matriz.n, i, j) == 0 && i != j){
 					MATRIZ_IJ(matriz.dados, matriz.n, i, j) = INFINITY;

@@ -68,7 +68,9 @@ int main(int argc, char *argv[]) {
 
 		for (i = 0; i < size; i++) {
 			MPI_Send(&sub_matrizes[i].n, 1, MPI_INT, i, TAG_TAM, MPI_COMM_WORLD);
-			MPI_Send(sub_matrizes[i].dados, sub_matrizes[i].n * sub_matrizes[i].n, MPI_FLOAT, i, TAG_DADOS, MPI_COMM_WORLD);
+			if (i != MASTER) {
+				MPI_Send(sub_matrizes[i].dados, sub_matrizes[i].n * sub_matrizes[i].n, MPI_FLOAT, i, TAG_DADOS, MPI_COMM_WORLD);
+			}
 		}
 	}
 
@@ -85,6 +87,7 @@ int main(int argc, char *argv[]) {
 
 
 	// Recebendo a sub-matriz.
+	printf("sou %d e estou esperando o tamanho\n", rank);
 	Matriz A, A2, B, C;
 	MPI_Recv(&A.n, 1, MPI_INT, MASTER, TAG_TAM, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	C.n = B.n = A2.n = A.n;
@@ -92,9 +95,14 @@ int main(int argc, char *argv[]) {
 	A2.dados = malloc(A2.n * A2.n * sizeof(float));
 	B.dados = malloc(B.n * B.n * sizeof(float));
 	C.dados = calloc(C.n * C.n, sizeof(float));
-	MPI_Recv(B.dados, B.n * B.n, MPI_FLOAT, MASTER, TAG_DADOS, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	if (rank != MASTER) {
+		MPI_Recv(B.dados, B.n * B.n, MPI_FLOAT, MASTER, TAG_DADOS, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	} else {
+		B.dados = sub_matrizes[rank].dados;
+	}
 
 	for(int g=1; g < matriz.n; g*=2){
+		if (rank == MASTER) printf("loop %d/%d\n", g, matriz.n);
 		memcpy(A.dados, B.dados, B.n * B.n * sizeof *B.dados);
 
 		for (i = 0; i < C.n * C.n; i++) {
