@@ -170,7 +170,7 @@ int main(int argc, char *argv[]) {
 
 		if (calcular_tempo) {
 			/// TODO: consertar.
-			printf("\n%zu.%ld\n", tvf.tv_sec - tvi.tv_sec, tvf.tv_usec - tvi.tv_usec);
+			printf("\n%f\n", (tvf.tv_sec + 1e-6 * tvf.tv_usec) - (tvi.tv_sec + 1e-6 * tvi.tv_usec));
 		}
 
 	} else {
