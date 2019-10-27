@@ -1,9 +1,12 @@
 from functools import reduce
 import math
+import sys
 
 def pm(m):
 	for l in m:
-		print(l)
+		for c in l:
+			print(c, end=" ")
+		print("")
 
 # Multiplicação normal de matriz com soma dos produtos
 def ml(m):
@@ -35,16 +38,23 @@ def fml(m):
 
 	return mr
 
-m = [
-	[0, 2, 0, 5, 0, 0],
-	[0, 0, 0, 0, 0, 0],
-	[0, 2, 0, 0, 0, 5],
-	[0, 0, 0, 0, 1, 0],
-	[3, 9, 3, 0, 0, 0],
-	[0, 0, 0, 0, 1, 0],
-]
-
-N = len(m)
+if len(sys.argv) < 2:
+	m = [
+		[0, 2, 0, 5, 0, 0],
+		[0, 0, 0, 0, 0, 0],
+		[0, 2, 0, 0, 0, 5],
+		[0, 0, 0, 0, 1, 0],
+		[3, 9, 3, 0, 0, 0],
+		[0, 0, 0, 0, 1, 0],
+	]
+	N = len(m)
+else:
+	with open(sys.argv[1]) as f:
+		N = int(f.readline())
+		m = []
+		for i in range(N):
+			linha = f.readline()
+			m.append([float(x.strip()) for x in linha.split(" ")])
 
 # Setando os 0s como infinito.
 for i in range(len(m)):
@@ -55,11 +65,14 @@ for i in range(len(m)):
 i = 1
 while i < N:
 	r = fml(m)
-	pm(r)
+	#pm(r)
 	m = r
+	i *= 2
+"""
 	try:
 		input()
 	except:
 		break
+"""
 
-	i *= 2
+pm(m)

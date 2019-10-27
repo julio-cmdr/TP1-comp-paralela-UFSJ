@@ -74,12 +74,13 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Recebendo a sub-matriz.
-	Matriz A, A2, B, C;
+	Matriz A, A2, B, B2, C;
 	MPI_Recv(&A.n, 1, MPI_INT, MASTER, TAG_TAM, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-	C.n = B.n = A2.n = A.n;
+	C.n = B2.n = B.n = A2.n = A.n;
 	A.dados = malloc(A.n * A.n * sizeof(float));
 	A2.dados = malloc(A2.n * A2.n * sizeof(float));
 	B.dados = malloc(B.n * B.n * sizeof(float));
+	B2.dados = malloc(B2.n * B2.n * sizeof(float));
 	C.dados = calloc(C.n * C.n, sizeof(float));
 	if (rank != MASTER) {
 		MPI_Recv(B.dados, B.n * B.n, MPI_FLOAT, MASTER, TAG_DADOS, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -115,7 +116,7 @@ int main(int argc, char *argv[]) {
 			MPI_Cart_rank(com_grade, (int[]) {r, u}, &rank_escolhido);
 
 			if (rank_linha == rank_escolhido % q) {
-				memcpy(A2.dados, A.dados, A.n * A.n * sizeof *B.dados);
+				memcpy(A2.dados, A.dados, A.n * A.n * sizeof *A.dados);
 			}
 
 			MPI_Bcast(A2.dados, A2.n * A2.n, MPI_FLOAT, rank_escolhido % q, com_linha);
@@ -123,11 +124,14 @@ int main(int argc, char *argv[]) {
 			// Multiplicar a matriz recebida.
 			matriz_acumular(A2, B, &C);
 
+			// Copia a matriz B para não perder os dados.
+			memcpy(B2.dados, B.dados, B.n * B.n * sizeof *B.dados);
+
 			// Recebe a matriz B do vizinho de baixo.
 			MPI_Irecv(B.dados, B.n * B.n, MPI_FLOAT, rank_grade_baixo, TAG_DADOS, com_grade, &request);
 
-			// Envia a matriz B para o vizinho de cima.
-			MPI_Send(B.dados, B.n * B.n, MPI_FLOAT, rank_grade_cima, TAG_DADOS, com_grade);
+			// Envia a matriz B2 para o vizinho de cima.
+			MPI_Send(B2.dados, B.n * B.n, MPI_FLOAT, rank_grade_cima, TAG_DADOS, com_grade);
 
 			MPI_Wait(&request, MPI_STATUS_IGNORE);
 		}
