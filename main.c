@@ -18,13 +18,12 @@ int main(int argc, char *argv[]) {
 	int i, j;
 
 	if (MPI_Init(&argc, &argv) != MPI_SUCCESS) {
-		// TODO: mensagem de erro
-		printf("Impossível inicializar o MPI!\n");
+		fprintf(stderr, "Impossível inicializar o MPI!\n");
 		return 1;
 	}
 
 	if (argc < 2) {
-		printf("Favor passar um arquivo de entrada!\n");
+		fprintf(stderr, "Favor passar um arquivo de entrada!\n");
 		goto encerrar;
 	}
 
@@ -124,7 +123,7 @@ int main(int argc, char *argv[]) {
 			// Multiplicar a matriz recebida.
 			matriz_acumular(A2, B, &C);
 
-			// Recebe a matriz B para o vizinho de cima.
+			// Recebe a matriz B do vizinho de baixo.
 			MPI_Irecv(B.dados, B.n * B.n, MPI_FLOAT, rank_grade_baixo, TAG_DADOS, com_grade, &request);
 
 			// Envia a matriz B para o vizinho de cima.
@@ -169,7 +168,6 @@ int main(int argc, char *argv[]) {
 		matriz_print(matriz);
 
 		if (calcular_tempo) {
-			/// TODO: consertar.
 			printf("\n%f\n", (tvf.tv_sec + 1e-6 * tvf.tv_usec) - (tvi.tv_sec + 1e-6 * tvi.tv_usec));
 		}
 
